@@ -72,6 +72,7 @@ class Command(BaseCommand):
                 )
             except Exception as e:
                 self.stdout.write(self.style.WARNING(f"  API error: {e}"))
+                article.delete()
                 try:
                     self.stdout.write(f"    {e.body.get('error', {}).get('message', '')}")
                 except Exception:
@@ -90,21 +91,21 @@ class Command(BaseCommand):
                 self.stdout.write(f"    Raw: {raw[:200]}")
                 errors += 1
                 article.processed = True
-                article.save(update_fields=["processed"])
+                article.delete()
                 continue
 
             if not isinstance(data, dict):
                 self.stdout.write(f"  SKIPPED (response: {data})")
                 skipped += 1
                 article.processed = True
-                article.save(update_fields=["processed"])
+                article.delete()
                 continue
 
             if data.get("skip") is True:
                 self.stdout.write(f"  SKIPPED (not question-worthy)")
                 skipped += 1
                 article.processed = True
-                article.save(update_fields=["processed"])
+                article.delete()
                 continue
 
             required = {"question", "option_a", "option_b", "option_c", "option_d", "correct_answer", "category", "difficulty"}

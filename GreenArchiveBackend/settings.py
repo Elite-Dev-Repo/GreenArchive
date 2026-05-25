@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'news',
     'questions',
     'django_filters',
+    'rest_framework_api_key',
 ]
 
 MIDDLEWARE = [
