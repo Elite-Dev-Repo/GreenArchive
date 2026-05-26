@@ -8,6 +8,8 @@ class UserApiKey(AbstractAPIKey):
         on_delete=models.CASCADE, 
         related_name="api_keys"
     )
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+
 
     class Meta(AbstractAPIKey.Meta):
         verbose_name = "User API key"
