@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'news',
     'questions',
+    'apikeys',
     'django_filters',
     'rest_framework_api_key',
 ]
