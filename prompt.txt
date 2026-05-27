@@ -1,0 +1,116 @@
+# GreenArchive Frontend Spec
+
+## Stack
+- React + TypeScript + Vite
+- Tailwind CSS (fully responsive — mobile-first)
+- axios, jwt-decode
+
+## Color Scheme
+- Use the existing Tailwind CSS color tokens already defined in the frontend project's
+- Do NOT invent or hardcode any hex values — reference the project's own theme variables
+
+## Pages to Build
+
+### 1. Login / Signup Page (`/auth`)
+- Toggle between Login and Signup forms
+- **Fields:** Email, Password (Login); Name, Email, Password, Confirm Password (Signup)
+- **Sign in with Google** button using a Google OAuth flow (redirect to backend)
+- Form validation (email format, password length >= 8, passwords match)
+- On success: store JWT access & refresh tokens from response in `localStorage` under keys `"token"` and `"refresh_token"`, decode with `jwt-decode`, redirect to dashboard
+- Loading spinners on submit buttons
+- Toast/alert for errors (invalid credentials, email taken, etc.)
+- Responsive: single column on mobile, two-column (illustration + form) on md+
+
+### 2. Create API Key Page (`/apikeys`)
+- Fetch existing API keys from backend on mount (`GET api/v1/apikeys/create-api-key/`)
+- "Generate New Key" button → `POST api/v1/apikeys/create-api-key/` with body `{ "name": "..." }`
+- Display keys in a table: Name, Key (masked with reveal toggle), Created At
+- Copy-to-clipboard button for each key
+- Empty state illustration when no keys exist
+
+### 3. API Docs Page (`/docs`)
+- Swagger/OpenAPI-inspired docs rendered as a static page
+- Sections: Authentication, Questions, News, API Keys
+- Each section: endpoint method, URL, request body example (JSON), response example (JSON)
+- Code snippets in dark-themed `<pre>` blocks
+- Sidebar navigation (sticky on desktop, collapsible hamburger on mobile)
+- "Try it out" button that calls the endpoint and shows live response
+
+### 4. API Service (`src/services/api.ts` or `src/lib/api.ts`)
+- Axios instance with `baseURL` from env (`VITE_API_URL`)
+- **Interceptor:** attach `Authorization: Bearer <token>` from localStorage on every request
+- **Interceptor:** on 401 response, try refreshing token via `POST api/v1/token/refresh/`; if refresh fails, clear localStorage and redirect to `/auth`
+- Export typed functions for each backend endpoint
+
+### 5. Protected Route Wrapper (`src/components/ProtectedRoute.tsx`)
+- Check for `localStorage.getItem("token")`
+- If no token → redirect to `/auth` via `<Navigate>`
+- If token exists → decode with `jwt-decode`, check expiry (`exp` field)
+- If expired → clear token, redirect to `/auth`
+- Otherwise render children / outlet
+- Wrap all authenticated pages in `<ProtectedRoute>`
+
+### 6. App Layout (`src/components/Layout.tsx`)
+- Top navbar with logo "GreenArchive", nav links, user avatar/dropdown
+- Logout button in dropdown — clears localStorage, redirects to `/auth`
+- Mobile: hamburger menu, sidebar drawer
+- Use `<Outlet />` for nested routes (React Router)
+
+## Backend API Routes (base URL from `VITE_API_URL`)
+| Method | Endpoint                             | Auth              | Description              |
+|--------|--------------------------------------|-------------------|--------------------------|
+| POST   | `api/v1/token/`                      | —                 | Login — returns JWT pair |
+| POST   | `api/v1/token/refresh/`              | —                 | Refresh expired token    |
+| GET    | `api/v1/news/`                       | `Api-Key <key>`   | List news articles       |
+| GET    | `api/v1/questions/?category=&difficulty=` | `Api-Key <key>` | List questions (filtered)|
+| GET    | `api/v1/apikeys/create-api-key/`     | `Bearer <jwt>`    | List user's API keys     |
+| POST   | `api/v1/apikeys/create-api-key/`     | `Bearer <jwt>`    | Create new API key       |
+
+**Auth header for JWT:** `Authorization: Bearer <access_token>`
+**Auth header for API Keys:** `Authorization: Api-Key <key_value>`
+
+## Axios Instance Pattern (src/lib/api.ts)
+```typescript
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  headers: { "Content-Type": "application/json" },
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/auth";
+    }
+    return Promise.reject(err);
+  }
+);
+
+export default api;
+```
+
+## Route Structure (React Router v6)
+```
+/auth        → AuthPage (Login / Signup)
+/apikeys     → Protected → ApiKeysPage
+/docs        → Protected → DocsPage
+/            → Protected → Dashboard (optional, or redirect to /apikeys)
+*            → NotFoundPage
+```
+
+## General Rules
+- All pages fully responsive (mobile-first Tailwind)
+- Smooth transitions, hover states, focus rings on inputs
+- Consistent spacing: p-4/p-6 cards, gap-4/6 grids
+- Error boundaries per page
+- Loading skeletons / spinners during data fetch
+- Use `react-hot-toast` or similar for notifications
