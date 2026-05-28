@@ -26,6 +26,8 @@ urlpatterns = [
     path('api/<str:version>/news/', include('news.urls')),
     path('api/<str:version>/questions/', include('questions.urls')),
     path('api/<str:version>/apikeys/', include('apikeys.urls')),
+    path('api/', include('core.urls')),
+
 
     #JWT ROUTES
 
@@ -35,5 +37,6 @@ urlpatterns = [
 
     # ALLAUTH ROUTES
      path('accounts/', include('allauth.urls')),
-
+     path('api/auth/', include('dj_rest_auth.urls')),
+    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
 ]
