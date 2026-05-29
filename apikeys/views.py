@@ -1,4 +1,4 @@
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -26,3 +26,21 @@ class CreateAPIKeyView(ListCreateAPIView):
             "key": key,
             "created": api_key.created_at
         }, status=status.HTTP_201_CREATED)
+    
+
+class DeleteApiKeyView(DestroyAPIView):
+    serializer_class = UserApiKeySerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        return UserApiKey.objects.filter(user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        # Retrieve the object using the queryset defined above
+        instance = self.get_object()
+        
+        # Perform the actual deletion
+        instance.delete()
+        
+        return Response(status=status.HTTP_204_NO_CONTENT)

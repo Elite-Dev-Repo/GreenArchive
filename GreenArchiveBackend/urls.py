@@ -36,7 +36,7 @@ urlpatterns = [
     path('auth/', include('rest_framework.urls', namespace='rest_framework')),
 
     # ALLAUTH ROUTES
-     path('accounts/', include('allauth.urls')),
-     path('api/auth/', include('dj_rest_auth.urls')),
+    path('accounts/', include('allauth.urls')),
+    path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
 ]

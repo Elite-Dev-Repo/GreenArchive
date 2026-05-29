@@ -13,7 +13,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
 
-        df = pd.read_csv("nigeria_quiz_500.csv")
+        df = pd.read_csv("nigeria_quiz_2000.csv")
 
         questions = [
             Question(

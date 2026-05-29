@@ -21,12 +21,3 @@ class QuestionListView(ListAPIView):
     filterset_fields = ['category', 'difficulty']
     permission_classes = [HasUserAPIKey]
 
-
-
-class CreateAPIKeyView(ListAPIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        name = request.data.get("name", "default")
-        api_key, key = APIKey.objects.create_key(name=name)
-        return Response({"api_key": key})

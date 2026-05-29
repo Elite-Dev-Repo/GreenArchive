@@ -17,7 +17,5 @@ class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
     # client_class is only needed if you are using specific OAuth2 flows
     client_class = OAuth2Client
-    # This must match your frontend development URL exactly
-    callback_url = os.getenv('FRONTEND_URL')
-    
+
 
